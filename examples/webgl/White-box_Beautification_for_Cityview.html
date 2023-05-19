@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+		<title>城市白模美化</title>
+		<link href="../../Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+		<link href="./css/bootstrap.min.css" rel="stylesheet">
+		<link href="./css/pretty.css" rel="stylesheet">
+		<script src="./js/jquery.min.js"></script>
+		<script src="./js/config.js"></script>
+		<link href="./css/style.css" rel="stylesheet">
+		<link href="./css/font-awesome.min.css" rel="stylesheet">
+		<link href="./css/liMarquee.css" rel="stylesheet">
+		<link href="./css/InfoGrid-skyline.css" rel="stylesheet">
+		<script type="text/javascript" src="../../Build/Cesium/Cesium.js"></script>
+		<style>
+			.inputBox {
+				margin-bottom: 15px;
+			}
+			
+			input[type=checkbox] {
+				margin: -4px 4px 0 0px;
+			}
+			
+			label {
+				display: inline-block;
+			}
+			
+			.param-container {
+				border: none;
+			}
+			
+			.WhiteBox {
+				width: 100px;
+			}
+			
+			.WhiteLabel {
+				width: 56px;
+			}
+			
+			.titleBox {
+				margin-bottom: 0px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="cesiumContainer"></div>
+		<div id="toolbar" class="param-container tool-bar">
+			<div class="titleBox">
+				<div class="titl WhiteBox">城市白模美化</div>
+				<span class="close2" aria-hidden="false">×</span>
+			</div>
+			<div class="param-item" style="margin-bottom: 0px;">
+				<label class="WhiteLabel" for="openNight">开启夜景</label>
+				<input type="checkbox" id="openNight">
+			</div>
+		</div>
+		<script type="text/javascript">
+			function onload(Cesium) {
+				var viewer = new Cesium.Viewer('cesiumContainer', {
+					selectionIndicator: false,
+					infoBox: false,
+					timeline: true,
+				});
+				var scene = viewer.scene;
+				scene.moon.show = false;
+				scene.globe.depthTestAgainstTerrain = false;
+				scene.skyAtmosphere.show = false; //大气
+				scene.debugShowFramesPerSecond = true;
+
+				var dayImageLayer = viewer.imageryLayers.addImageryProvider(new Cesium.BingMapsImageryProvider({
+					key: URL_CONFIG.BING_MAP_KEY, //可至官网（https://www.bingmapsportal.com/）申请key
+					url: URL_CONFIG.BINGMAP
+				}));
+				scene.specularEnvironmentMaps = '../webgl/images/kiara_6_afternoon_2k_ibl.ktx';
+				//创建天空盒
+				var blueskyBox = new Cesium.SkyBox({
+					sources: {
+						positiveX: './images/SkyBox/bluesky/Right.jpg',
+						negativeX: './images/SkyBox/bluesky/Left.jpg',
+						positiveY: './images/SkyBox/bluesky/Front.jpg',
+						negativeY: './images/SkyBox/bluesky/Back.jpg',
+						positiveZ: './images/SkyBox/bluesky/Up.jpg',
+						negativeZ: './images/SkyBox/bluesky/Down.jpg'
+					}
+				});
+				scene.skyBox = blueskyBox;
+				// 设置环境光
+				scene.lightSource.ambientLightColor = new Cesium.Color(0.4, 0.4, 0.4, 1);
+				// 新增直射光1
+				var position = new Cesium.Cartesian3.fromDegrees(106.282013734667, 29.7615756638933, 630);
+				var targetPosition1 = new Cesium.Cartesian3.fromDegrees(106.756840202248, 29.3980661015228, 500);
+				var dirLightOptions = {
+					targetPosition: targetPosition1,
+					color: new Cesium.Color(0.6, 0.6, 0.6, 1),
+					intensity: 1.0
+				};
+				directionalLight_1 = new Cesium.DirectionalLight(position, dirLightOptions);
+				scene.addLightSource(directionalLight_1);
+				// 新增直射光2
+				var position2 = new Cesium.Cartesian3.fromDegrees(106.756840202248, 29.3980661015228, 500);
+				var targetPosition2 = new Cesium.Cartesian3.fromDegrees(106.282013734667, 29.7615756638933, 630);
+				var dirLightOptions2 = {
+					targetPosition: targetPosition2,
+					color: new Cesium.Color(0.7, 0.7, 0.7, 1),
+					intensity: 1.0
+				};
+				directionalLight_2 = new Cesium.DirectionalLight(position2, dirLightOptions2);
+				scene.addLightSource(directionalLight_2);
+				// 新增直射光3
+				var position3 = new Cesium.Cartesian3.fromDegrees(106.452, 29.573, 1);
+				var targetPosition3 = new Cesium.Cartesian3.fromDegrees(106.454, 29.581, 91);
+				var dirLightOptions3 = {
+					targetPosition: targetPosition3,
+					color: new Cesium.Color(0.5, 0.5, 0.5, 1),
+					intensity: 1.0
+				};
+				directionalLight_3 = new Cesium.DirectionalLight(position3, dirLightOptions3);
+				scene.addLightSource(directionalLight_3);
+				var promise = scene.open(URL_CONFIG.SCENE_CHONGQING_MH);
+				promise.then(function(layers) {
+
+					var NightBox, roadLine1, roadLine2, roadLine3, nightLayer, imageNightLayer, nightPromise;
+
+					onloadNightScene();
+
+					$('#openNight').on('input change', function() {
+						if(this.checked) {
+							switchScene(true);
+						} else {
+							switchScene(false);
+						}
+					})
+				});
+				// 加载夜景数据
+				function onloadNightScene() {
+					// 夜景天空盒
+					NightBox = new Cesium.SkyBox({
+						sources: {
+							positiveX: './images/SkyBox/Night/Right.png',
+							negativeX: './images/SkyBox/Night/Left.png',
+							positiveY: './images/SkyBox/Night/Front.png',
+							negativeY: './images/SkyBox/Night/Back.png',
+							positiveZ: './images/SkyBox/Night/Up.png',
+							negativeZ: './images/SkyBox/Night/Down.png'
+						}
+					});
+					imageNightLayer = viewer.imageryLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
+						url: './images/BlackMarble_2016-1.jpg'
+					}));
+					imageNightLayer.show = false;
+					nightPromise = scene.open(URL_CONFIG.SCENE_CHONGQING_MH_N);
+					nightPromise.then(function(layer) {
+						nightLayer = layer[0];
+						nightLayer.visible = false;
+					})
+				}
+
+				// 切换场景
+				function switchScene(isNightScene) {
+					if(isNightScene) {
+						scene.skyBox = NightBox;
+						imageNightLayer.show = true;
+						nightLayer.visible = true;
+						dayImageLayer.show = false;
+						//移除白天灯光，设置环境光(夜晚)
+						scene.removeLightSource(directionalLight_1);
+						scene.removeLightSource(directionalLight_2);
+						scene.removeLightSource(directionalLight_3);
+						scene.lightSource.ambientLightColor = new Cesium.Color(0.15, 0.15, 0.15, 1);
+						//加载线数据
+						roadLine1 = Cesium.GeoJsonDataSource.load('./data/json/lineback_1.json');
+						roadLine1.then(function(dataSource) {
+							viewer.dataSources.add(dataSource);
+							var lines_1 = dataSource.entities.values;
+							for(var i = 0; i < lines_1.length; i++) {
+								var line = lines_1[i];
+								line.polyline.material = new Cesium.PolylineGlowMaterialProperty({ //设置Glow材质
+									glowPower: 0.08,
+									color: new Cesium.Color(8, 2, 0, 0.3)
+								});
+								line.polyline.width = 2;
+							}
+							lines_1.visible = false;
+						}).otherwise(function(error) {
+							window.alert(error);
+						});
+						roadLine2 = Cesium.GeoJsonDataSource.load('./data/json/lineback2_1.json');
+						roadLine2.then(function(dataSource) {
+							viewer.dataSources.add(dataSource);
+							var lines_2 = dataSource.entities.values;
+							for(var i = 0; i < lines_2.length; i++) {
+								var line = lines_2[i];
+								line.polyline.material = new Cesium.PolylineGlowMaterialProperty({ //设置Glow材质
+									glowPower: 0.06,
+									color: new Cesium.Color(10, 2, 0, 0.3)
+								});
+								line.polyline.width = 2;
+							}
+							lines_2.visible = false;
+						}).otherwise(function(error) {
+							window.alert(error);
+						});
+						roadLine3 = Cesium.GeoJsonDataSource.load('./data/json/lineback3_1.json');
+						roadLine3.then(function(dataSource) {
+							viewer.dataSources.add(dataSource);
+							var lines_3 = dataSource.entities.values;
+							for(var i = 0; i < lines_3.length; i++) {
+								var line = lines_3[i];
+								line.polyline.material = new Cesium.PolylineGlowMaterialProperty({ //设置Glow材质
+									glowPower: 0.05,
+
+									color: new Cesium.Color(8, 5, 0, 0.3)
+								});
+								line.polyline.width = 2;
+							}
+						}).otherwise(function(error) {
+							window.alert(error);
+						});
+					} else {
+						viewer.dataSources.removeAll();
+						scene.skyBox = blueskyBox;
+						nightLayer ? nightLayer.visible = false : undefined;
+						imageNightLayer.show = false;
+						dayImageLayer.show = true;
+						// 添加白天灯光
+						scene.addLightSource(directionalLight_1);
+						scene.addLightSource(directionalLight_2);
+						scene.addLightSource(directionalLight_3);
+					}
+				}
+			}
+			if(typeof Cesium !== 'undefined') {
+				window.startupCalled = true;
+				onload(Cesium);
+			}
+		</script>
+	</body>
+
+</html>
