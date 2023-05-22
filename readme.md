@@ -1,6 +1,10 @@
 # 超图cesium本地调试
 
 **`Build\Cesium\Cesium.js`是2023年5月19日从[support.supermap.com.cn:8090/webgl/examples/webgl/editor.html#FlowingPipeLine](http://support.supermap.com.cn:8090/webgl/examples/webgl/editor.html#FlowingPipeLine)获取, 格式化得到的**
+## 版本
+- Cesium.VERSION === '1.67'
+- Cesium.S3MVersion === {S3M: 49, S3M4: 1}
+- Cesium.SuperMapVersion === '34443'
 
 # 跑起来
 - `npm i serve -g`
