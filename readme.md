@@ -22,3 +22,8 @@ la.stackSave = $d.stackSave;
 - set NODE_OPTIONS="--max-old-space-size=18096"
 - cd D:\Desktop\supermap-cesium-loacl-debug\Build\Cesium
 - deuglify Cesium.js > 1.js      
+
+# 文档
+
+- [http://support.supermap.com.cn:8090/webgl/docs/Documentation/ 超图封装的文档](http://support.supermap.com.cn:8090/webgl/docs/Documentation/)
+- [http://support.supermap.com.cn:8090/webgl/Build/Documentation/ 超图用的Cesium的文档](http://support.supermap.com.cn:8090/webgl/Build/Documentation/)
